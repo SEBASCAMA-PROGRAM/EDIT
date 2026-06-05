@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menú · Salsa Night in Weston</title>
+<style>
+  /* ---------- Impresión: media carta por lado, doble cara ---------- */
+  @page {
+    size: 5.5in 8.5in;   /* media carta vertical */
+    margin: 0;
+  }
+
+  :root{
+    --negro:    #0b0606;
+    --vino:     #2a0d10;
+    --vino2:    #1a0708;
+    --rojo:     #b51d1d;
+    --rojo-cta: #a01818;
+    --oro:      #d8b15a;
+    --oro-claro:#e8c878;
+    --crema:    #f3ece0;
+    --gris:     #b9aa97;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  body{
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    background:#444;
+    color:var(--crema);
+  }
+
+  /* Cada cara del menú */
+  .side{
+    width:5.5in;
+    height:8.5in;
+    padding:0.45in 0.5in 0.35in;
+    background:
+      radial-gradient(120% 80% at 50% 0%, var(--vino) 0%, var(--vino2) 45%, var(--negro) 100%);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    overflow:hidden;
+    page-break-after:always;
+  }
+  .side:last-child{ page-break-after:auto; }
+
+  /* En pantalla, separamos las dos caras */
+  @media screen{
+    body{ padding:24px; display:flex; flex-direction:column; align-items:center; gap:24px; }
+    .side{ box-shadow:0 10px 40px rgba(0,0,0,.5); border-radius:6px; }
+    .print-tip{
+      color:#eee; font-size:13px; max-width:5.5in; text-align:center;
+      background:#222; padding:10px 14px; border-radius:6px; line-height:1.5;
+    }
+  }
+  @media print{ .print-tip{ display:none; } }
+
+  /* ---------- Encabezado de marca (logo en texto) ---------- */
+  .brand{ text-align:center; }
+  .brand .wings{
+    font-family: "Arial Black", Impact, sans-serif;
+    font-weight:900;
+    letter-spacing:.14em;
+    font-size:34px;
+    color:var(--rojo);
+    line-height:1;
+    text-shadow:0 1px 0 rgba(0,0,0,.4);
+  }
+  .brand .wings::before,
+  .brand .wings::after{ content:"\2014"; color:var(--oro); margin:0 .35em; font-weight:400; }
+  .brand .sub{
+    margin-top:6px;
+    font-size:10px; letter-spacing:.45em; color:var(--gris); text-transform:uppercase;
+  }
+
+  /* ---------- Título de la cara ---------- */
+  .title{ text-align:center; margin:14px 0 6px; }
+  .title .kicker{
+    font-style:italic; color:var(--oro-claro); font-size:12px; letter-spacing:.05em;
+  }
+  .title h1{
+    font-family:"Arial Black", Impact, sans-serif;
+    font-size:40px; letter-spacing:.04em; line-height:.95; margin-top:2px;
+  }
+  .title h1 .l1{ color:var(--rojo); }
+  .title h1 .l2{ color:var(--oro); }
+
+  .divider{
+    text-align:center; color:var(--oro); margin:10px 0 4px; font-size:13px; letter-spacing:.3em;
+  }
+  .divider::before,.divider::after{
+    content:""; display:inline-block; width:34%; height:1px; vertical-align:middle;
+    background:linear-gradient(90deg, transparent, var(--oro)); margin:0 8px;
+  }
+  .divider:last-of-type::before{ background:linear-gradient(90deg, transparent, var(--oro)); }
+
+  /* ---------- Lista de items ---------- */
+  .menu{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:9px; padding:6px 2px; }
+
+  .item{ display:flex; align-items:baseline; gap:8px; }
+  .item .name{
+    font-weight:700; color:var(--crema); font-size:15px; letter-spacing:.01em; white-space:nowrap;
+  }
+  .item .name .es{ color:var(--oro-claro); font-style:italic; font-weight:600; font-size:13.5px; }
+  .item .dots{
+    flex:1; border-bottom:1px dotted rgba(216,177,90,.5); transform:translateY(-4px);
+  }
+  .item .desc{ display:block; font-size:11px; color:var(--gris); margin-top:1px; line-height:1.3; }
+  .item .price{ color:var(--oro); font-weight:700; font-size:14px; white-space:nowrap; }
+
+  /* Tabla de wings */
+  .wings-box{
+    margin-top:4px; border:1px solid rgba(216,177,90,.35); border-radius:6px;
+    padding:8px 10px; background:rgba(0,0,0,.18);
+  }
+  .wings-box .wt{ color:var(--oro); font-weight:700; font-size:12px; letter-spacing:.08em; text-align:center; margin-bottom:5px; }
+  .wings-grid{ display:flex; justify-content:space-between; text-align:center; }
+  .wings-grid div b{ display:block; color:var(--crema); font-size:16px; }
+  .wings-grid div span{ font-size:10px; color:var(--gris); }
+
+  /* ---------- Pie ---------- */
+  .foot{ text-align:center; margin-top:8px; }
+  .foot .site{ color:var(--oro-claro); font-weight:700; font-size:13px; letter-spacing:.02em; }
+  .foot .note{ font-size:9px; color:var(--gris); margin-top:4px; letter-spacing:.04em; }
+  .foot .paid{
+    margin-top:8px; padding-top:7px; border-top:1px solid rgba(216,177,90,.3);
+    font-size:7.5px; color:var(--gris); letter-spacing:.08em; text-transform:uppercase;
+  }
+</style>
+</head>
+<body>
+
+  <p class="print-tip">
+    🖨️ <b>Para imprimir:</b> Archivo → Imprimir · Tamaño <b>media carta (5.5 × 8.5")</b> ·
+    Activa <b>"Gráficos de fondo"</b> · Imprime <b>a doble cara</b> (voltear por el borde corto).
+    Cara 1 = Bebidas · Cara 2 = Comida.
+  </p>
+
+  <!-- ====================== CARA 1 · BEBIDAS ====================== -->
+  <section class="side">
+    <div class="brand">
+      <div class="wings">WINGS</div>
+      <div class="sub">In Weston</div>
+    </div>
+
+    <div class="title">
+      <div class="kicker">Salsa Night · Cocktails</div>
+      <h1><span class="l1">BARRA</span> <span class="l2">&amp; TRAGOS</span></h1>
+    </div>
+
+    <div class="divider">&#9670;</div>
+
+    <div class="menu">
+      <div class="item">
+        <span class="name">La Flamenca <span class="es">· vodka &amp; cranberry</span></span>
+        <span class="dots"></span>
+        <span class="desc">Vodka con arándano, refrescante y carmesí.</span>
+      </div>
+
+      <div class="item">
+        <span class="name">La Cubanita <span class="es">· rum &amp; coke</span></span>
+        <span class="dots"></span>
+        <span class="desc">Ron y Coca-Cola con un toque de limón.</span>
+      </div>
+
+      <div class="item">
+        <span class="name">La Paloma <span class="es">· tequila, squirt &amp; limón</span></span>
+        <span class="dots"></span>
+        <span class="desc">Tequila, cítrico Squirt y lima fresca.</span>
+      </div>
+
+      <div class="item">
+        <span class="name">La Fronteriza <span class="es">· tequila margarita</span></span>
+        <span class="dots"></span>
+        <span class="desc">Margarita clásica de tequila, dulce y ácida.</span>
+      </div>
+
+      <div class="item">
+        <span class="name">El Mojito Weston <span class="es">· mojito</span></span>
+        <span class="dots"></span>
+        <span class="desc">Ron, hierbabuena, lima y soda. ¡A bailar!</span>
+      </div>
+    </div>
+
+    <div class="divider">&#9670;</div>
+
+    <div class="foot">
+      <div class="site">Incluido con tu entrada: 1 cóctel</div>
+      <div class="note">Salsa · Latin Vibes · Bachata · Live DJ</div>
+      <div class="paid">Paid for by Mery Lopez-Palma, Republican, for Florida House District 102</div>
+    </div>
+  </section>
+
+  <!-- ====================== CARA 2 · COMIDA ====================== -->
+  <section class="side">
+    <div class="brand">
+      <div class="wings">WINGS</div>
+      <div class="sub">In Weston</div>
+    </div>
+
+    <div class="title">
+      <div class="kicker">Salsa Night · Kitchen</div>
+      <h1><span class="l1">PARA</span> <span class="l2">COMPARTIR</span></h1>
+    </div>
+
+    <div class="divider">&#9670;</div>
+
+    <div class="wings-box">
+      <div class="wt">★ WINGS ★</div>
+      <div class="wings-grid">
+        <div><b>5</b><span>piezas</span></div>
+        <div><b>10</b><span>piezas</span></div>
+        <div><b>15</b><span>piezas</span></div>
+        <div><b>25</b><span>piezas</span></div>
+        <div><b>50</b><span>piezas</span></div>
+      </div>
+    </div>
+
+    <div class="menu">
+      <div class="item"><span class="name">Tater Tots</span><span class="dots"></span></div>
+      <div class="item"><span class="name">Mozzarella Sticks</span><span class="dots"></span></div>
+      <div class="item"><span class="name">Jalapeño Poppers</span><span class="dots"></span></div>
+      <div class="item"><span class="name">Corn Bites</span><span class="dots"></span></div>
+      <div class="item"><span class="name">Onion Rings</span><span class="dots"></span></div>
+      <div class="item"><span class="name">Steak Fries</span><span class="dots"></span></div>
+      <div class="item"><span class="name">Curly Fries</span><span class="dots"></span></div>
+      <div class="item"><span class="name">Philly Steak</span><span class="dots"></span></div>
+      <div class="item"><span class="name">Key West Sandwich</span><span class="dots"></span></div>
+      <div class="item"><span class="name">Club Turkey Sandwich</span><span class="dots"></span></div>
+    </div>
+
+    <div class="divider">&#9670;</div>
+
+    <div class="foot">
+      <div class="site">wingsinweston.foodieordersecure.com</div>
+      <div class="note">Menú completo y precios · escanea o visita el sitio</div>
+      <div class="paid">Paid for by Mery Lopez-Palma, Republican, for Florida House District 102</div>
+    </div>
+  </section>
+
+</body>
+</html>
