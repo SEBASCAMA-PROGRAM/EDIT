@@ -2,240 +2,188 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Menú · Salsa Night in Weston</title>
 <style>
-  /* ---------- Impresión: media carta por lado, doble cara ---------- */
-  @page {
-    size: 5.5in 8.5in;   /* media carta vertical */
-    margin: 0;
-  }
+  @page { size: 5.5in 8.5in; margin: 0; }
 
   :root{
-    --negro:    #0b0606;
-    --vino:     #2a0d10;
-    --vino2:    #1a0708;
-    --rojo:     #b51d1d;
-    --rojo-cta: #a01818;
-    --oro:      #d8b15a;
-    --oro-claro:#e8c878;
-    --crema:    #f3ece0;
-    --gris:     #b9aa97;
+    --negro:#0b0606; --vino:#2a0d10; --vino2:#1a0708;
+    --rojo:#b51d1d; --oro:#d8b15a; --oro-claro:#e8c878;
+    --crema:#f3ece0; --gris:#b9aa97;
   }
-
   *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Helvetica Neue", Arial, sans-serif; color:var(--crema); }
 
-  body{
-    font-family: "Helvetica Neue", Arial, sans-serif;
-    background:#444;
-    color:var(--crema);
-  }
-
-  /* Cada cara del menú */
   .side{
-    width:5.5in;
-    height:8.5in;
-    padding:0.45in 0.5in 0.35in;
-    background:
-      radial-gradient(120% 80% at 50% 0%, var(--vino) 0%, var(--vino2) 45%, var(--negro) 100%);
-    display:flex;
-    flex-direction:column;
-    position:relative;
-    overflow:hidden;
+    width:5.5in; height:8.5in; padding:0.32in 0.38in 0.26in;
+    background:radial-gradient(120% 70% at 50% 0%, var(--vino) 0%, var(--vino2) 45%, var(--negro) 100%);
+    display:flex; flex-direction:column; position:relative; overflow:hidden;
     page-break-after:always;
   }
   .side:last-child{ page-break-after:auto; }
 
-  /* En pantalla, separamos las dos caras */
   @media screen{
-    body{ padding:24px; display:flex; flex-direction:column; align-items:center; gap:24px; }
-    .side{ box-shadow:0 10px 40px rgba(0,0,0,.5); border-radius:6px; }
-    .print-tip{
-      color:#eee; font-size:13px; max-width:5.5in; text-align:center;
-      background:#222; padding:10px 14px; border-radius:6px; line-height:1.5;
-    }
+    body{ background:#444; padding:24px; display:flex; flex-direction:column; align-items:center; gap:24px; }
+    .side{ box-shadow:0 10px 40px rgba(0,0,0,.5); }
+    .tip{ color:#eee; font-size:13px; max-width:5.5in; text-align:center; background:#222; padding:10px 14px; border-radius:6px; line-height:1.5; }
+    .side{ border-radius:5px; }
   }
-  @media print{ .print-tip{ display:none; } }
+  @media print{ .tip{ display:none; } }
 
-  /* ---------- Encabezado de marca (logo en texto) ---------- */
+  /* Marca */
   .brand{ text-align:center; }
-  .brand .wings{
-    font-family: "Arial Black", Impact, sans-serif;
-    font-weight:900;
-    letter-spacing:.14em;
-    font-size:34px;
-    color:var(--rojo);
-    line-height:1;
-    text-shadow:0 1px 0 rgba(0,0,0,.4);
-  }
-  .brand .wings::before,
-  .brand .wings::after{ content:"\2014"; color:var(--oro); margin:0 .35em; font-weight:400; }
-  .brand .sub{
-    margin-top:6px;
-    font-size:10px; letter-spacing:.45em; color:var(--gris); text-transform:uppercase;
-  }
+  .brand .wings{ font-family:"Arial Black",Impact,sans-serif; font-weight:900; letter-spacing:.14em; font-size:26px; color:var(--rojo); line-height:1; }
+  .brand .wings::before,.brand .wings::after{ content:"\2014"; color:var(--oro); margin:0 .3em; font-weight:400; }
+  .brand .sub{ margin-top:3px; font-size:8px; letter-spacing:.42em; color:var(--gris); text-transform:uppercase; }
 
-  /* ---------- Título de la cara ---------- */
-  .title{ text-align:center; margin:14px 0 6px; }
-  .title .kicker{
-    font-style:italic; color:var(--oro-claro); font-size:12px; letter-spacing:.05em;
-  }
-  .title h1{
-    font-family:"Arial Black", Impact, sans-serif;
-    font-size:40px; letter-spacing:.04em; line-height:.95; margin-top:2px;
-  }
-  .title h1 .l1{ color:var(--rojo); }
-  .title h1 .l2{ color:var(--oro); }
+  /* Título de cara */
+  .title{ text-align:center; margin:7px 0 2px; }
+  .title .kicker{ font-style:italic; color:var(--oro-claro); font-size:10px; }
+  .title h1{ font-family:"Arial Black",Impact,sans-serif; font-size:30px; letter-spacing:.03em; line-height:.95; margin-top:1px; }
+  .title h1 .l1{ color:var(--rojo); } .title h1 .l2{ color:var(--oro); }
 
-  .divider{
-    text-align:center; color:var(--oro); margin:10px 0 4px; font-size:13px; letter-spacing:.3em;
-  }
-  .divider::before,.divider::after{
-    content:""; display:inline-block; width:34%; height:1px; vertical-align:middle;
-    background:linear-gradient(90deg, transparent, var(--oro)); margin:0 8px;
-  }
-  .divider:last-of-type::before{ background:linear-gradient(90deg, transparent, var(--oro)); }
+  .divider{ text-align:center; color:var(--oro); margin:5px 0 3px; font-size:10px; }
+  .divider::before,.divider::after{ content:""; display:inline-block; width:36%; height:1px; vertical-align:middle; background:linear-gradient(90deg,transparent,var(--oro)); margin:0 8px; }
 
-  /* ---------- Lista de items ---------- */
-  .menu{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:9px; padding:6px 2px; }
+  .content{ flex:1; display:flex; flex-direction:column; justify-content:center; }
 
-  .item{ display:flex; align-items:baseline; gap:8px; }
-  .item .name{
-    font-weight:700; color:var(--crema); font-size:15px; letter-spacing:.01em; white-space:nowrap;
-  }
-  .item .name .es{ color:var(--oro-claro); font-style:italic; font-weight:600; font-size:13.5px; }
-  .item .dots{
-    flex:1; border-bottom:1px dotted rgba(216,177,90,.5); transform:translateY(-4px);
-  }
-  .item .desc{ display:block; font-size:11px; color:var(--gris); margin-top:1px; line-height:1.3; }
-  .item .price{ color:var(--oro); font-weight:700; font-size:14px; white-space:nowrap; }
+  /* Secciones */
+  .sec-h{ color:var(--oro); font-weight:700; font-size:11px; letter-spacing:.12em; text-transform:uppercase; margin:8px 0 4px; border-bottom:1px solid rgba(216,177,90,.3); padding-bottom:2px; }
 
-  /* Tabla de wings */
-  .wings-box{
-    margin-top:4px; border:1px solid rgba(216,177,90,.35); border-radius:6px;
-    padding:8px 10px; background:rgba(0,0,0,.18);
-  }
-  .wings-box .wt{ color:var(--oro); font-weight:700; font-size:12px; letter-spacing:.08em; text-align:center; margin-bottom:5px; }
+  .item{ display:flex; align-items:baseline; gap:6px; margin-bottom:3px; }
+  .item .name{ font-weight:700; color:var(--crema); font-size:11.5px; white-space:nowrap; }
+  .item .name .es{ color:var(--oro-claro); font-style:italic; font-weight:600; font-size:10px; }
+  .item .dots{ flex:1; border-bottom:1px dotted rgba(216,177,90,.45); transform:translateY(-3px); }
+  .item .price{ color:var(--oro); font-weight:700; font-size:11px; white-space:nowrap; }
+  .item .desc{ display:block; font-size:8.5px; color:var(--gris); margin-top:0; line-height:1.25; width:100%; }
+
+  .opts{ font-size:8.5px; color:var(--gris); margin:1px 0 5px; line-height:1.45; }
+  .opts b{ color:var(--oro-claro); font-weight:600; }
+
+  .two{ display:flex; gap:16px; }
+  .two > div{ flex:1; }
+
+  /* Caja wings */
+  .wings-box{ border:1px solid rgba(216,177,90,.4); border-radius:5px; padding:6px 8px; background:rgba(0,0,0,.2); margin-bottom:3px; }
   .wings-grid{ display:flex; justify-content:space-between; text-align:center; }
-  .wings-grid div b{ display:block; color:var(--crema); font-size:16px; }
-  .wings-grid div span{ font-size:10px; color:var(--gris); }
+  .wings-grid div b{ display:block; color:var(--crema); font-size:15px; line-height:1; }
+  .wings-grid div .pc{ font-size:8px; color:var(--gris); }
+  .wings-grid div .pr{ font-size:10.5px; color:var(--oro); font-weight:700; margin-top:2px; }
 
-  /* ---------- Pie ---------- */
-  .foot{ text-align:center; margin-top:8px; }
-  .foot .site{ color:var(--oro-claro); font-weight:700; font-size:13px; letter-spacing:.02em; }
-  .foot .note{ font-size:9px; color:var(--gris); margin-top:4px; letter-spacing:.04em; }
-  .foot .paid{
-    margin-top:8px; padding-top:7px; border-top:1px solid rgba(216,177,90,.3);
-    font-size:7.5px; color:var(--gris); letter-spacing:.08em; text-transform:uppercase;
-  }
+  /* Pie */
+  .foot{ text-align:center; margin-top:auto; padding-top:5px; }
+  .foot .site{ color:var(--oro-claro); font-weight:700; font-size:11px; }
+  .foot .note{ font-size:8px; color:var(--gris); margin-top:2px; }
+  .foot .paid{ margin-top:5px; padding-top:4px; border-top:1px solid rgba(216,177,90,.3); font-size:6.5px; color:var(--gris); letter-spacing:.06em; text-transform:uppercase; }
 </style>
 </head>
 <body>
 
-  <p class="print-tip">
-    🖨️ <b>Para imprimir:</b> Archivo → Imprimir · Tamaño <b>media carta (5.5 × 8.5")</b> ·
-    Activa <b>"Gráficos de fondo"</b> · Imprime <b>a doble cara</b> (voltear por el borde corto).
-    Cara 1 = Bebidas · Cara 2 = Comida.
-  </p>
+  <p class="tip">🖨️ <b>Imprimir:</b> tamaño <b>Carta (Letter)</b> · activa <b>“Gráficos de fondo”</b> · <b>doble cara</b> (voltear borde corto). Cara 1 = Bebidas · Cara 2 = Comida.</p>
 
-  <!-- ====================== CARA 1 · BEBIDAS ====================== -->
+  <!-- ============ CARA 1 · BEBIDAS ============ -->
   <section class="side">
-    <div class="brand">
-      <div class="wings">WINGS</div>
-      <div class="sub">In Weston</div>
-    </div>
-
-    <div class="title">
-      <div class="kicker">Salsa Night · Cocktails</div>
-      <h1><span class="l1">BARRA</span> <span class="l2">&amp; TRAGOS</span></h1>
-    </div>
-
+    <div class="brand"><div class="wings">WINGS</div><div class="sub">In Weston</div></div>
+    <div class="title"><div class="kicker">Salsa Night · Cocktails</div>
+      <h1><span class="l1">BARRA</span> <span class="l2">&amp; TRAGOS</span></h1></div>
     <div class="divider">&#9670;</div>
 
-    <div class="menu">
-      <div class="item">
-        <span class="name">La Flamenca <span class="es">· vodka &amp; cranberry</span></span>
-        <span class="dots"></span>
-        <span class="desc">Vodka con arándano, refrescante y carmesí.</span>
+    <div class="content">
+      <div class="sec-h">Cócteles de la casa · $12.50 c/u</div>
+
+      <div class="item"><span class="name">La Flamenca <span class="es">· vodka &amp; cranberry</span></span><span class="dots"></span><span class="price">$12.50</span>
+        <span class="desc">Vodka con arándano, refrescante y carmesí.</span></div>
+      <div class="item"><span class="name">La Cubanita <span class="es">· rum &amp; coke</span></span><span class="dots"></span><span class="price">$12.50</span>
+        <span class="desc">Ron y Coca-Cola con un toque de limón.</span></div>
+      <div class="item"><span class="name">La Paloma <span class="es">· tequila, squirt &amp; limón</span></span><span class="dots"></span><span class="price">$12.50</span>
+        <span class="desc">Tequila, cítrico Squirt y lima fresca.</span></div>
+      <div class="item"><span class="name">La Fronteriza <span class="es">· margarita de tequila</span></span><span class="dots"></span><span class="price">$12.50</span>
+        <span class="desc">Margarita clásica, dulce y ácida. Pídela con sal o sin sal.</span></div>
+      <div class="item"><span class="name">El Mojito Weston <span class="es">· mojito</span></span><span class="dots"></span><span class="price">$12.50</span>
+        <span class="desc">Ron, hierbabuena, lima y soda. ¡A bailar!</span></div>
+      <div class="opts">Todos servidos en las rocas. <b>Sin alcohol (mocktail):</b> cualquiera, &minus; $4.</div>
+
+      <div class="sec-h">★ Promoción Cervezas ★</div>
+      <div class="two">
+        <div>
+          <div class="item"><span class="name">Draft <span class="es">· de barril</span></span><span class="dots"></span><span class="price">$5.00</span>
+            <span class="desc">Bien fría, servida al momento.</span></div>
+        </div>
+        <div>
+          <div class="item"><span class="name">Bottle <span class="es">· en botella</span></span><span class="dots"></span><span class="price">$6.50</span>
+            <span class="desc">Nacional o importada.</span></div>
+        </div>
       </div>
 
-      <div class="item">
-        <span class="name">La Cubanita <span class="es">· rum &amp; coke</span></span>
-        <span class="dots"></span>
-        <span class="desc">Ron y Coca-Cola con un toque de limón.</span>
-      </div>
-
-      <div class="item">
-        <span class="name">La Paloma <span class="es">· tequila, squirt &amp; limón</span></span>
-        <span class="dots"></span>
-        <span class="desc">Tequila, cítrico Squirt y lima fresca.</span>
-      </div>
-
-      <div class="item">
-        <span class="name">La Fronteriza <span class="es">· tequila margarita</span></span>
-        <span class="dots"></span>
-        <span class="desc">Margarita clásica de tequila, dulce y ácida.</span>
-      </div>
-
-      <div class="item">
-        <span class="name">El Mojito Weston <span class="es">· mojito</span></span>
-        <span class="dots"></span>
-        <span class="desc">Ron, hierbabuena, lima y soda. ¡A bailar!</span>
-      </div>
+      <div class="sec-h">Sin alcohol</div>
+      <div class="opts"><b>Refrescos</b> · <b>Agua</b> · <b>Jugos</b> · <b>Café</b> — consulta en la barra.</div>
     </div>
-
-    <div class="divider">&#9670;</div>
 
     <div class="foot">
       <div class="site">Incluido con tu entrada: 1 cóctel</div>
-      <div class="note">Salsa · Latin Vibes · Bachata · Live DJ</div>
+      <div class="note">Salsa · Latin Vibes · Bachata · Live DJ · Clases gratis 7:15 PM</div>
       <div class="paid">Paid for by Mery Lopez-Palma, Republican, for Florida House District 102</div>
     </div>
   </section>
 
-  <!-- ====================== CARA 2 · COMIDA ====================== -->
+  <!-- ============ CARA 2 · COMIDA ============ -->
   <section class="side">
-    <div class="brand">
-      <div class="wings">WINGS</div>
-      <div class="sub">In Weston</div>
-    </div>
-
-    <div class="title">
-      <div class="kicker">Salsa Night · Kitchen</div>
-      <h1><span class="l1">PARA</span> <span class="l2">COMPARTIR</span></h1>
-    </div>
-
+    <div class="brand"><div class="wings">WINGS</div><div class="sub">In Weston</div></div>
+    <div class="title"><div class="kicker">Salsa Night · Kitchen</div>
+      <h1><span class="l1">PARA</span> <span class="l2">COMPARTIR</span></h1></div>
     <div class="divider">&#9670;</div>
 
-    <div class="wings-box">
-      <div class="wt">★ WINGS ★</div>
-      <div class="wings-grid">
-        <div><b>5</b><span>piezas</span></div>
-        <div><b>10</b><span>piezas</span></div>
-        <div><b>15</b><span>piezas</span></div>
-        <div><b>25</b><span>piezas</span></div>
-        <div><b>50</b><span>piezas</span></div>
+    <div class="content">
+      <div class="sec-h">★ Wings · alitas ★</div>
+      <div class="wings-box">
+        <div class="wings-grid">
+          <div><b>5</b><div class="pc">piezas</div><div class="pr">$7.95</div></div>
+          <div><b>10</b><div class="pc">piezas</div><div class="pr">$12.95</div></div>
+          <div><b>15</b><div class="pc">piezas</div><div class="pr">$17.95</div></div>
+          <div><b>25</b><div class="pc">piezas</div><div class="pr">$28.95</div></div>
+          <div><b>50</b><div class="pc">piezas</div><div class="pr">$49.95</div></div>
+        </div>
       </div>
-    </div>
+      <div class="opts">
+        <b>Estilo:</b> con hueso (traditional) o boneless &nbsp;·&nbsp;
+        <b>Salsas:</b> Mild · Medium · Hot · Extra Hot · BBQ · Honey BBQ · Garlic Parmesan · Teriyaki · Mango Habanero · Golden BBQ · Cajun (seco) · Lemon Pepper (seco)<br>
+        Se sirven con apio y blue cheese o ranch.
+      </div>
 
-    <div class="menu">
-      <div class="item"><span class="name">Tater Tots</span><span class="dots"></span></div>
-      <div class="item"><span class="name">Mozzarella Sticks</span><span class="dots"></span></div>
-      <div class="item"><span class="name">Jalapeño Poppers</span><span class="dots"></span></div>
-      <div class="item"><span class="name">Corn Bites</span><span class="dots"></span></div>
-      <div class="item"><span class="name">Onion Rings</span><span class="dots"></span></div>
-      <div class="item"><span class="name">Steak Fries</span><span class="dots"></span></div>
-      <div class="item"><span class="name">Curly Fries</span><span class="dots"></span></div>
-      <div class="item"><span class="name">Philly Steak</span><span class="dots"></span></div>
-      <div class="item"><span class="name">Key West Sandwich</span><span class="dots"></span></div>
-      <div class="item"><span class="name">Club Turkey Sandwich</span><span class="dots"></span></div>
-    </div>
+      <div class="two">
+        <div>
+          <div class="sec-h">Apetizers</div>
+          <div class="item"><span class="name">Mozzarella Sticks</span><span class="dots"></span><span class="price">$8.95</span>
+            <span class="desc">Con salsa marinara.</span></div>
+          <div class="item"><span class="name">Jalapeño Poppers</span><span class="dots"></span><span class="price">$8.95</span>
+            <span class="desc">Rellenos de cheddar, con sour cream.</span></div>
+          <div class="item"><span class="name">Corn Bites</span><span class="dots"></span><span class="price">$8.95</span>
+            <span class="desc">Bocaditos dulces de maíz.</span></div>
+          <div class="item"><span class="name">Onion Rings</span><span class="dots"></span><span class="price">$8.95</span>
+            <span class="desc">Aros de cebolla en beer batter.</span></div>
+        </div>
+        <div>
+          <div class="sec-h">Papas · sides</div>
+          <div class="item"><span class="name">Tater Tots</span><span class="dots"></span><span class="price">$5.95</span></div>
+          <div class="item"><span class="name">Steak Fries</span><span class="dots"></span><span class="price">$5.95</span></div>
+          <div class="item"><span class="name">Curly Fries</span><span class="dots"></span><span class="price">$5.95</span></div>
+          <div class="opts" style="margin-top:4px;"><b>Estilos de papas:</b> plain · Cajun · con queso · queso &amp; chili (+$1.50)</div>
+        </div>
+      </div>
 
-    <div class="divider">&#9670;</div>
+      <div class="sec-h">Sandwiches · “Superheroes”</div>
+      <div class="opts" style="margin-top:-2px;">Todos servidos con fresh cut fries o chips.</div>
+      <div class="item"><span class="name">Philly Steak</span><span class="dots"></span><span class="price">$15.95</span>
+        <span class="desc">Con steak o chicken, queso provolone, cebolla y pimiento.</span></div>
+      <div class="item"><span class="name">Key West Sandwich</span><span class="dots"></span><span class="price">$15.95</span>
+        <span class="desc">Pollo en Key West sauce, jamón, Swiss &amp; cheddar en hoagie.</span></div>
+      <div class="item"><span class="name">Club Turkey Sandwich</span><span class="dots"></span><span class="price">$18.95</span>
+        <span class="desc">Pavo, tocino, lechuga, tomate y mayo en triple pan.</span></div>
+    </div>
 
     <div class="foot">
       <div class="site">wingsinweston.foodieordersecure.com</div>
-      <div class="note">Menú completo y precios · escanea o visita el sitio</div>
+      <div class="note">Menú completo, salsas y precios en el sitio · escanea o visita</div>
       <div class="paid">Paid for by Mery Lopez-Palma, Republican, for Florida House District 102</div>
     </div>
   </section>
