@@ -1,0 +1,21 @@
+{
+  "name": "evento-crm-tickets",
+  "version": "1.0.0",
+  "description": "Mini CRM + venta de boletos con QR para eventos en vivo",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2",
+    "qrcode": "^1.5.4",
+    "resend": "^4.0.1",
+    "stripe": "^17.5.0"
+  }
+}

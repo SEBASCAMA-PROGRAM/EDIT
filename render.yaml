@@ -1,0 +1,23 @@
+# Despliegue en 1 clic en Render.com — conecta tu repo y Render lee esto.
+services:
+  - type: web
+    name: evento-crm-tickets
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node src/server.js
+    envVars:
+      - key: BASE_URL
+        sync: false        # Pon aquí la URL pública que te da Render
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false

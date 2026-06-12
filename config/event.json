@@ -1,0 +1,63 @@
+{
+  "brand": {
+    "name": "Alejandro López En Vivo",
+    "tagline": "Una noche que no vas a olvidar",
+    "primaryColor": "#7c3aed",
+    "accentColor": "#f59e0b",
+    "logoUrl": "",
+    "contactEmail": "ochoaconcerts@gmail.com",
+    "organizer": "Ochoa Concerts"
+  },
+  "event": {
+    "title": "Alejandro López — En Vivo",
+    "dateText": "Sábado 15 de agosto, 2026",
+    "timeText": "8:00 PM",
+    "doorsText": "Puertas abren 7:00 PM",
+    "venue": "Por confirmar",
+    "address": "Miami, FL",
+    "description": "Alejandro López llega en vivo para una noche íntima e inolvidable. Cupos limitados — asegura tu lugar."
+  },
+  "currency": "usd",
+  "tiers": [
+    {
+      "id": "general",
+      "name": "Entrada General",
+      "price": 50,
+      "perks": [
+        "Acceso general al evento",
+        "Entrada con QR personal"
+      ]
+    },
+    {
+      "id": "vip",
+      "name": "VIP",
+      "price": 100,
+      "perks": [
+        "Acceso preferencial / zona VIP",
+        "Meet & greet con Alejandro",
+        "Bebida de cortesía"
+      ]
+    },
+    {
+      "id": "mesa",
+      "name": "Mesa Premium (4 personas)",
+      "price": 400,
+      "perks": [
+        "Mesa reservada para 4 personas",
+        "Servicio de mesero",
+        "Botella de cortesía",
+        "Acceso a zona VIP"
+      ]
+    }
+  ],
+  "survey": {
+    "title": "Confírmanos unos datos para tu llegada",
+    "intro": "Esto nos ayuda a recibirte mejor el día del evento. Solo toma un minuto.",
+    "questions": [
+      { "id": "acompanantes", "label": "¿Cuántas personas vienen contigo (sin contarte)?", "type": "number", "required": false },
+      { "id": "restriccion", "label": "¿Alguna restricción alimenticia o alergia?", "type": "text", "required": false },
+      { "id": "como_supiste", "label": "¿Cómo te enteraste del evento?", "type": "text", "required": false },
+      { "id": "comentario", "label": "¿Algo que quieras que sepamos?", "type": "textarea", "required": false }
+    ]
+  }
+}
