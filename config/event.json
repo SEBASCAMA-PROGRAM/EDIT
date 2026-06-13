@@ -1,63 +1,78 @@
 {
   "brand": {
-    "name": "Alejandro López En Vivo",
-    "tagline": "Una noche que no vas a olvidar",
-    "primaryColor": "#7c3aed",
-    "accentColor": "#f59e0b",
+    "name": "Tu Primera Propiedad",
+    "tagline": "Todo lo que necesitas para comprar tu primera casa — en una sola noche.",
+    "primaryColor": "#1b3a5b",
+    "accentColor": "#e0b341",
     "logoUrl": "",
     "contactEmail": "ochoaconcerts@gmail.com",
-    "organizer": "Ochoa Concerts"
+    "organizer": "Alejandro López"
   },
   "event": {
-    "title": "Alejandro López — En Vivo",
-    "dateText": "Sábado 15 de agosto, 2026",
-    "timeText": "8:00 PM",
-    "doorsText": "Puertas abren 7:00 PM",
+    "title": "Cómo Comprar Tu Primera Propiedad",
+    "dateText": "Viernes 26 de junio, 2026",
+    "timeText": "Por confirmar",
+    "doorsText": "",
     "venue": "Por confirmar",
     "address": "Miami, FL",
-    "description": "Alejandro López llega en vivo para una noche íntima e inolvidable. Cupos limitados — asegura tu lugar."
+    "description": "Una noche con todo lo que necesitas para dar el paso hacia tu primera propiedad: expertos en vivo (lender, realtor, title company e inspector), comida y bebida incluidas, tu librito-guía del proceso, y de regalo una consulta 1-1 con Alejandro López y su equipo. Ven por toda la información, disfruta y sal con un plan claro."
   },
+  "speakers": [
+    { "name": "Alejandro López", "role": "Anfitrión — abre el evento", "topics": "Tu camino hacia la primera propiedad" },
+    { "name": "Vane Toro", "role": "Lender / Préstamos", "topics": "Asistencias, pre-calificación, cómo funciona y qué documentos necesitas" },
+    { "name": "Jonathan", "role": "Realtor", "topics": "La oferta, la negociación y los puntos clave de la compra" },
+    { "name": "Mery López Palma", "role": "Title Search Company", "topics": "Cómo funciona, fraudes, qué se hace y el escrow" },
+    { "name": "Inspector invitado", "role": "Inspección", "topics": "Cómo funciona la inspección de la propiedad" }
+  ],
+  "includes": [
+    "Comida: 1 plato a elegir (10 alitas, club sándwich, philly steak o hamburguesa)",
+    "Bebida a elegir (cerveza, vino, prosecco o soda)",
+    "Librito con la información del evento y guías para comprar tu primera propiedad",
+    "Acceso a todos los expositores en vivo",
+    "Consulta 1-1 de regalo (Alejandro, realtors, mortgage brokers, asistencias y procesos)"
+  ],
   "currency": "usd",
   "tiers": [
     {
-      "id": "general",
-      "name": "Entrada General",
+      "id": "individual",
+      "name": "Entrada Individual",
+      "price": 40,
+      "perks": [
+        "Para 1 persona",
+        "Comida: 1 plato a elegir (10 alitas, club sándwich, philly steak o hamburguesa)",
+        "Bebida a elegir (cerveza, vino, prosecco o soda)",
+        "Librito-guía del evento",
+        "Acceso a todos los expositores",
+        "Consulta 1-1 de regalo"
+      ]
+    },
+    {
+      "id": "pareja",
+      "name": "Entrada en Pareja (2 personas)",
       "price": 50,
       "perks": [
-        "Acceso general al evento",
-        "Entrada con QR personal"
-      ]
-    },
-    {
-      "id": "vip",
-      "name": "VIP",
-      "price": 100,
-      "perks": [
-        "Acceso preferencial / zona VIP",
-        "Meet & greet con Alejandro",
-        "Bebida de cortesía"
-      ]
-    },
-    {
-      "id": "mesa",
-      "name": "Mesa Premium (4 personas)",
-      "price": 400,
-      "perks": [
-        "Mesa reservada para 4 personas",
-        "Servicio de mesero",
-        "Botella de cortesía",
-        "Acceso a zona VIP"
+        "Para 2 personas — ahorras $30",
+        "2 comidas: cada quien elige su plato (10 alitas, club sándwich, philly steak o hamburguesa)",
+        "2 bebidas a elegir (cerveza, vino, prosecco o soda)",
+        "Librito-guía del evento",
+        "Acceso a todos los expositores",
+        "Consulta 1-1 de regalo"
       ]
     }
   ],
   "survey": {
-    "title": "Confírmanos unos datos para tu llegada",
-    "intro": "Esto nos ayuda a recibirte mejor el día del evento. Solo toma un minuto.",
+    "title": "Confírmanos tus datos para el evento",
+    "intro": "Elige tu comida y bebida, y cuéntanos un poco para recibirte mejor. Toma un minuto.",
     "questions": [
-      { "id": "acompanantes", "label": "¿Cuántas personas vienen contigo (sin contarte)?", "type": "number", "required": false },
-      { "id": "restriccion", "label": "¿Alguna restricción alimenticia o alergia?", "type": "text", "required": false },
-      { "id": "como_supiste", "label": "¿Cómo te enteraste del evento?", "type": "text", "required": false },
-      { "id": "comentario", "label": "¿Algo que quieras que sepamos?", "type": "textarea", "required": false }
+      { "id": "plato", "label": "Tu plato (persona 1)", "type": "select", "options": ["10 alitas", "Club sándwich", "Philly steak", "Hamburguesa"], "required": true },
+      { "id": "bebida", "label": "Tu bebida (persona 1)", "type": "select", "options": ["Cerveza", "Vino", "Prosecco", "Soda"], "required": true },
+      { "id": "plato2", "label": "Si vienes en pareja: plato (persona 2)", "type": "select", "options": ["— no aplica —", "10 alitas", "Club sándwich", "Philly steak", "Hamburguesa"], "required": false },
+      { "id": "bebida2", "label": "Si vienes en pareja: bebida (persona 2)", "type": "select", "options": ["— no aplica —", "Cerveza", "Vino", "Prosecco", "Soda"], "required": false },
+      { "id": "primera", "label": "¿Sería tu primera propiedad?", "type": "select", "options": ["Sí", "No"], "required": false },
+      { "id": "precalificado", "label": "¿Ya estás pre-calificado para un préstamo?", "type": "select", "options": ["Sí", "No", "No estoy seguro"], "required": false },
+      { "id": "zona", "label": "¿En qué ciudad o zona buscas comprar?", "type": "text", "required": false },
+      { "id": "consulta", "label": "¿Con quién te gustaría tu consulta 1-1 de regalo?", "type": "select", "options": ["Alejandro López", "Realtor", "Mortgage broker / Lender", "Asistencias de pago", "Aún no sé"], "required": false },
+      { "id": "comentario", "label": "¿Algo más que quieras decirnos?", "type": "textarea", "required": false }
     ]
   }
 }

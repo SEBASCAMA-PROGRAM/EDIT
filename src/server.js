@@ -128,6 +128,21 @@ app.get('/evento', (req, res) => {
       <div class="card">
         <p style="font-size:16px;line-height:1.5">${esc(ev.description)}</p>
       </div>
+      ${(eventConfig.speakers && eventConfig.speakers.length) ? `
+      <h2 style="text-align:center;margin-top:30px">Expositores</h2>
+      <div class="card">
+        ${eventConfig.speakers.map((sp) => `
+          <div class="speaker">
+            <div class="sp-name">${esc(sp.name)}</div>
+            <div class="sp-role">${esc(sp.role)}</div>
+            ${sp.topics ? `<div class="sp-topics">${esc(sp.topics)}</div>` : ''}
+          </div>`).join('')}
+      </div>` : ''}
+      ${(eventConfig.includes && eventConfig.includes.length) ? `
+      <h2 style="text-align:center;margin-top:30px">Qué incluye tu entrada</h2>
+      <div class="card">
+        <ul class="includes">${eventConfig.includes.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>
+      </div>` : ''}
       <h2 style="text-align:center;margin-top:30px">Elige tu boleto</h2>
       <div class="card">${tiers}</div>
       <p class="center muted" style="color:#bbb">Pago seguro${DEMO_PAYMENTS ? ' (MODO DEMO)' : ' con Stripe'} · Recibirás tu boleto con QR por correo.</p>
@@ -238,9 +253,15 @@ app.get('/formulario/:token', async (req, res) => {
   const s = eventConfig.survey;
   const done = !!order.survey_json;
   const fields = s.questions.map((q) => {
-    const input = q.type === 'textarea'
-      ? `<textarea name="${esc(q.id)}" rows="3" ${q.required ? 'required' : ''}></textarea>`
-      : `<input type="${q.type === 'number' ? 'number' : 'text'}" name="${esc(q.id)}" ${q.required ? 'required' : ''}/>`;
+    let input;
+    if (q.type === 'textarea') {
+      input = `<textarea name="${esc(q.id)}" rows="3" ${q.required ? 'required' : ''}></textarea>`;
+    } else if (q.type === 'select') {
+      const opts = (q.options || []).map((o) => `<option value="${esc(o)}">${esc(o)}</option>`).join('');
+      input = `<select name="${esc(q.id)}" ${q.required ? 'required' : ''}>${opts}</select>`;
+    } else {
+      input = `<input type="${q.type === 'number' ? 'number' : 'text'}" name="${esc(q.id)}" ${q.required ? 'required' : ''}/>`;
+    }
     return `<label>${esc(q.label)}${input}</label>`;
   }).join('');
 

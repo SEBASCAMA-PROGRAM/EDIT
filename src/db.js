@@ -1,71 +1,87 @@
-import { createClient } from '@libsql/client';
 import crypto from 'node:crypto';
-import { dbConfig } from './config.js';
+import { DB_DRIVER, pgConfig, libsqlConfig } from './config.js';
 
-const client = createClient(dbConfig);
+// =========================================================
+//  ADAPTADOR DE BASE DE DATOS
+//  Mismo código de alto nivel para Postgres (Supabase) y libSQL (local).
+//  El SQL se escribe con marcadores "?"; en Postgres se traducen a $1,$2...
+// =========================================================
+const nz = (v) => (v === undefined ? null : v);
+let adapter;
 
-// ---- helpers de bajo nivel ----
-const nz = (v) => (v === undefined ? null : v); // libSQL no acepta undefined
-async function run(sql, args = []) {
-  return client.execute({ sql, args: args.map(nz) });
+if (DB_DRIVER === 'postgres') {
+  const { default: pg } = await import('pg');
+  const pool = new pg.Pool(pgConfig);
+  const toPg = (sql) => { let i = 0; return sql.replace(/\?/g, () => `$${++i}`); };
+  adapter = {
+    async run(sql, args = []) { return pool.query(toPg(sql), args.map(nz)); },
+    async get(sql, args = []) { const r = await pool.query(toPg(sql), args.map(nz)); return r.rows[0] || null; },
+    async all(sql, args = []) { const r = await pool.query(toPg(sql), args.map(nz)); return r.rows; },
+    async insert(sql, args = []) { const r = await pool.query(toPg(sql) + ' RETURNING id', args.map(nz)); return r.rows[0].id; },
+    async createTables() {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS contacts (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL, phone TEXT, email TEXT, notes TEXT,
+          created_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS orders (
+          id SERIAL PRIMARY KEY,
+          contact_id INTEGER, tier_id TEXT, tier_name TEXT NOT NULL, perks TEXT,
+          amount_cents INTEGER NOT NULL, currency TEXT NOT NULL,
+          status TEXT NOT NULL DEFAULT 'pending', source TEXT DEFAULT 'crm',
+          stripe_session_id TEXT, payment_url TEXT, ticket_token TEXT UNIQUE,
+          checked_in INTEGER NOT NULL DEFAULT 0, checked_in_at TEXT,
+          survey_json TEXT, created_at TEXT NOT NULL, paid_at TEXT
+        );`);
+    },
+  };
+} else {
+  const { createClient } = await import('@libsql/client');
+  const client = createClient(libsqlConfig);
+  adapter = {
+    async run(sql, args = []) { return client.execute({ sql, args: args.map(nz) }); },
+    async get(sql, args = []) { const r = await client.execute({ sql, args: args.map(nz) }); return r.rows[0] || null; },
+    async all(sql, args = []) { const r = await client.execute({ sql, args: args.map(nz) }); return r.rows; },
+    async insert(sql, args = []) { const r = await client.execute({ sql, args: args.map(nz) }); return Number(r.lastInsertRowid); },
+    async createTables() {
+      await client.executeMultiple(`
+        CREATE TABLE IF NOT EXISTS contacts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL, phone TEXT, email TEXT, notes TEXT,
+          created_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS orders (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          contact_id INTEGER, tier_id TEXT, tier_name TEXT NOT NULL, perks TEXT,
+          amount_cents INTEGER NOT NULL, currency TEXT NOT NULL,
+          status TEXT NOT NULL DEFAULT 'pending', source TEXT DEFAULT 'crm',
+          stripe_session_id TEXT, payment_url TEXT, ticket_token TEXT UNIQUE,
+          checked_in INTEGER NOT NULL DEFAULT 0, checked_in_at TEXT,
+          survey_json TEXT, created_at TEXT NOT NULL, paid_at TEXT
+        );`);
+    },
+  };
 }
-async function get(sql, args = []) {
-  const r = await client.execute({ sql, args: args.map(nz) });
-  return r.rows[0] || null;
-}
-async function all(sql, args = []) {
-  const r = await client.execute({ sql, args: args.map(nz) });
-  return r.rows;
-}
-const lastId = (r) => Number(r.lastInsertRowid);
 
+const { run, get, all, insert } = adapter;
 const nowIso = () => new Date().toISOString();
 export const token = (n = 16) => crypto.randomBytes(n).toString('hex');
 
 // ---- creación de tablas (idempotente) ----
 let initPromise = null;
 export function init() {
-  if (!initPromise) {
-    initPromise = client.executeMultiple(`
-      CREATE TABLE IF NOT EXISTS contacts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        phone TEXT,
-        email TEXT,
-        notes TEXT,
-        created_at TEXT NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        contact_id INTEGER,
-        tier_id TEXT,
-        tier_name TEXT NOT NULL,
-        perks TEXT,
-        amount_cents INTEGER NOT NULL,
-        currency TEXT NOT NULL,
-        status TEXT NOT NULL DEFAULT 'pending',
-        source TEXT DEFAULT 'crm',
-        stripe_session_id TEXT,
-        payment_url TEXT,
-        ticket_token TEXT UNIQUE,
-        checked_in INTEGER NOT NULL DEFAULT 0,
-        checked_in_at TEXT,
-        survey_json TEXT,
-        created_at TEXT NOT NULL,
-        paid_at TEXT
-      );
-    `);
-  }
+  if (!initPromise) initPromise = adapter.createTables();
   return initPromise;
 }
 
 // ---------- CONTACTS ----------
 export async function createContact({ name, phone, email, notes }) {
-  const r = await run(
+  const id = await insert(
     'INSERT INTO contacts (name, phone, email, notes, created_at) VALUES (?, ?, ?, ?, ?)',
     [name, phone, email, notes, nowIso()]
   );
-  return getContact(lastId(r));
+  return getContact(id);
 }
 
 export function getContact(id) {
@@ -83,7 +99,7 @@ export function listContacts() {
 
 // ---------- ORDERS ----------
 export async function createOrder(o) {
-  const r = await run(
+  const id = await insert(
     `INSERT INTO orders
       (contact_id, tier_id, tier_name, perks, amount_cents, currency, status, source, ticket_token, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -93,7 +109,7 @@ export async function createOrder(o) {
       token(16), nowIso(),
     ]
   );
-  return getOrder(lastId(r));
+  return getOrder(id);
 }
 
 export function getOrder(id) {
@@ -152,5 +168,8 @@ export async function stats() {
   const checked = (await get("SELECT COUNT(*) n FROM orders WHERE status='paid' AND checked_in=1")).n;
   const revenue = (await get("SELECT COALESCE(SUM(amount_cents),0) s FROM orders WHERE status='paid'")).s;
   const contacts = (await get('SELECT COUNT(*) n FROM contacts')).n;
-  return { paid: Number(paid), pending: Number(pending), checked: Number(checked), revenue: Number(revenue), contacts: Number(contacts) };
+  return {
+    paid: Number(paid), pending: Number(pending), checked: Number(checked),
+    revenue: Number(revenue), contacts: Number(contacts),
+  };
 }

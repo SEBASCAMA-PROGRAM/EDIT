@@ -112,14 +112,19 @@ Ejemplo de un nivel:
 
 Puedes usar **Vercel** (recomendado, lo pediste) o **Render**.
 
-### Opción A — Vercel + Turso (recomendada)
+### Opción A — Vercel + Supabase (recomendada)
 
-Vercel es *serverless*, así que la base de datos NO puede ser un archivo (se borraría). Por eso usamos **Turso**, una base de datos gratis compatible con SQLite. Son ~10 minutos:
+Vercel es *serverless*, así que la base de datos NO puede ser un archivo (se borraría). Por eso usamos **Supabase** (Postgres gratis). Son ~10 minutos:
 
-**1. Crea la base de datos (Turso)**
-- Entra a https://turso.tech y crea cuenta (gratis).
-- Crea una base de datos (botón *Create Database*).
-- Copia su **URL** (empieza con `libsql://...`) y genera un **token** (*Create Token*).
+**1. Crea la base de datos (Supabase)**
+- Entra a https://supabase.com → crea cuenta (gratis, entra con GitHub).
+- *New project* → ponle nombre y una contraseña de base de datos (guárdala).
+- Espera ~2 min a que se cree.
+- Ve a **Project Settings → Database → Connection string** y elige la pestaña **Transaction** (puerto **6543**, modo *pooler* — ideal para Vercel).
+- Copia esa URL completa (`postgresql://...:6543/postgres`) y reemplaza `[YOUR-PASSWORD]` por la contraseña que pusiste.
+  → guárdala como **DATABASE_URL**
+
+> No necesitas crear ninguna tabla a mano: la app las crea sola la primera vez.
 
 **2. Sube el proyecto a GitHub** (este repositorio).
 
@@ -130,8 +135,7 @@ Vercel es *serverless*, así que la base de datos NO puede ser un archivo (se bo
 
   | Variable | Valor |
   |---|---|
-  | `TURSO_DATABASE_URL` | la URL `libsql://...` de Turso |
-  | `TURSO_AUTH_TOKEN` | el token de Turso |
+  | `DATABASE_URL` | la URL de Supabase (paso 1) |
   | `ADMIN_PASSWORD` | tu contraseña del panel |
   | `SESSION_SECRET` | cualquier texto largo y aleatorio |
   | `BASE_URL` | la URL de tu proyecto (ej. `https://tu-app.vercel.app`) |
@@ -144,7 +148,9 @@ Vercel es *serverless*, así que la base de datos NO puede ser un archivo (se bo
 
 > 💡 La primera vez, `BASE_URL` aún no la sabes: deja que Vercel haga el primer deploy, copia la URL que te da, ponla en `BASE_URL` y vuelve a *Redeploy*. (Si no la pones, el sistema usa la URL automática de Vercel igual.)
 
-> ⚠️ **Sin `TURSO_DATABASE_URL`, Vercel funciona pero en modo temporal**: los datos se borran. Para vender de verdad, configura Turso.
+> ⚠️ **Sin `DATABASE_URL`, Vercel funciona pero en modo temporal**: los datos se borran. Para vender de verdad, configura Supabase.
+
+> Alternativa: también soporta **Turso** (libSQL) con `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` en vez de `DATABASE_URL`.
 
 Después, en el webhook de Stripe usa la URL: `https://tu-app.vercel.app/webhook/stripe`.
 
@@ -163,7 +169,7 @@ Después, en el webhook de Stripe usa la URL: `https://tu-app.vercel.app/webhook
 config/event.json   ← datos del evento, precios y preguntas (edítalo tú)
 src/
   server.js         ← rutas y lógica principal (exporta la app)
-  db.js             ← base de datos libSQL (archivo local o Turso en la nube)
+  db.js             ← base de datos (Supabase/Postgres en la nube, o archivo local)
   payments.js       ← Stripe (o modo demo)
   email.js          ← Resend + plantillas de correo (o modo demo)
   qr.js             ← generación de códigos QR

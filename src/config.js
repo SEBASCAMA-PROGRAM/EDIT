@@ -22,15 +22,26 @@ export const env = {
   EMAIL_FROM: process.env.EMAIL_FROM || 'onboarding@resend.dev',
 };
 
-// Configuración de la base de datos (libSQL):
-//  - Con TURSO_DATABASE_URL  -> base en la nube (persistente, ideal para Vercel)
-//  - Sin ella, en Vercel     -> archivo temporal en /tmp (solo demo, NO persistente)
-//  - Sin ella, en local      -> archivo en ./data/app.db
+// Configuración de la base de datos. Prioridad:
+//  1. DATABASE_URL  -> Postgres / Supabase  (persistente, ideal para Vercel)
+//  2. TURSO_DATABASE_URL -> libSQL en la nube (alternativa)
+//  3. Sin ninguna, en Vercel -> archivo temporal en /tmp (demo, NO persistente)
+//  4. Sin ninguna, en local  -> archivo en ./data/app.db
 const onVercel = !!process.env.VERCEL;
-export const dbConfig = process.env.TURSO_DATABASE_URL
+export const DB_DRIVER = process.env.DATABASE_URL ? 'postgres' : 'libsql';
+
+export const pgConfig = {
+  connectionString: process.env.DATABASE_URL,
+  // Supabase requiere SSL
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : undefined,
+};
+
+export const libsqlConfig = process.env.TURSO_DATABASE_URL
   ? { url: process.env.TURSO_DATABASE_URL, authToken: process.env.TURSO_AUTH_TOKEN }
   : { url: `file:${onVercel ? '/tmp/app.db' : path.join(root, 'data', 'app.db')}` };
-export const DB_PERSISTENT = !!process.env.TURSO_DATABASE_URL || !onVercel;
+
+export const DB_PERSISTENT =
+  !!process.env.DATABASE_URL || !!process.env.TURSO_DATABASE_URL || !onVercel;
 
 // Carpeta de la bandeja demo (en Vercel el disco es de solo lectura salvo /tmp)
 export const OUTBOX_DIR = onVercel ? '/tmp/outbox' : path.join(root, 'data', 'outbox');

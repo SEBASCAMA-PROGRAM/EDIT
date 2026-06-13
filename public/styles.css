@@ -34,6 +34,14 @@ label { display: block; margin: 12px 0 0; font-weight: 600; font-size: 14px; }
 .row { display: flex; gap: 12px; flex-wrap: wrap; }
 .row > * { flex: 1; min-width: 160px; }
 
+.speaker { padding: 12px 0; border-bottom: 1px solid #eee; }
+.speaker:last-child { border-bottom: none; }
+.sp-name { font-weight: 800; font-size: 17px; color: #1f2330; }
+.sp-role { color: var(--primary); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .03em; }
+.sp-topics { color: #555; font-size: 14px; margin-top: 3px; }
+.includes { padding-left: 20px; margin: 0; color: #333; }
+.includes li { margin: 8px 0; font-size: 15px; }
+
 .qrbox { text-align: center; }
 .qrbox img { width: 260px; height: 260px; border: 10px solid #fff; border-radius: 14px; box-shadow: 0 4px 18px rgba(0,0,0,.18); }
 .muted { color: #8a8a99; font-size: 13px; }
