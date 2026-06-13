@@ -108,16 +108,52 @@ Ejemplo de un nivel:
 
 ---
 
-## ☁️ Publicarlo en internet (para que otros entren)
+## ☁️ Publicarlo en internet
 
-La forma más fácil es **Render.com** (tiene plan gratis):
+Puedes usar **Vercel** (recomendado, lo pediste) o **Render**.
 
-1. Sube este repositorio a GitHub.
-2. En Render: **New → Web Service** → conecta el repo (ya incluye `render.yaml`).
-3. En **Environment** pon tus variables: `BASE_URL` (la URL que te da Render), `ADMIN_PASSWORD`, y tus llaves de Stripe/Resend.
-4. Deploy. Listo: tendrás tu landing en `https://tu-app.onrender.com/evento`.
+### Opción A — Vercel + Turso (recomendada)
 
-> ⚠️ La base de datos es un archivo (`data/app.db`). En planes gratuitos sin disco persistente se puede borrar al reiniciar. Para un evento real, en Render agrega un **Disk** montado en `/app/data`, o usa un plan con disco.
+Vercel es *serverless*, así que la base de datos NO puede ser un archivo (se borraría). Por eso usamos **Turso**, una base de datos gratis compatible con SQLite. Son ~10 minutos:
+
+**1. Crea la base de datos (Turso)**
+- Entra a https://turso.tech y crea cuenta (gratis).
+- Crea una base de datos (botón *Create Database*).
+- Copia su **URL** (empieza con `libsql://...`) y genera un **token** (*Create Token*).
+
+**2. Sube el proyecto a GitHub** (este repositorio).
+
+**3. Importa en Vercel**
+- Entra a https://vercel.com → *Add New… → Project* → importa tu repo de GitHub.
+- Vercel detecta el `vercel.json` automáticamente. No cambies el *build*.
+- En **Environment Variables** agrega:
+
+  | Variable | Valor |
+  |---|---|
+  | `TURSO_DATABASE_URL` | la URL `libsql://...` de Turso |
+  | `TURSO_AUTH_TOKEN` | el token de Turso |
+  | `ADMIN_PASSWORD` | tu contraseña del panel |
+  | `SESSION_SECRET` | cualquier texto largo y aleatorio |
+  | `BASE_URL` | la URL de tu proyecto (ej. `https://tu-app.vercel.app`) |
+  | `STRIPE_SECRET_KEY` | tu llave de Stripe (cuando quieras cobrar real) |
+  | `STRIPE_WEBHOOK_SECRET` | el secreto del webhook de Stripe |
+  | `RESEND_API_KEY` | tu llave de Resend |
+  | `EMAIL_FROM` | tu remitente |
+
+- **Deploy**. Tendrás tu landing en `https://tu-app.vercel.app/evento` y el panel en `/admin`.
+
+> 💡 La primera vez, `BASE_URL` aún no la sabes: deja que Vercel haga el primer deploy, copia la URL que te da, ponla en `BASE_URL` y vuelve a *Redeploy*. (Si no la pones, el sistema usa la URL automática de Vercel igual.)
+
+> ⚠️ **Sin `TURSO_DATABASE_URL`, Vercel funciona pero en modo temporal**: los datos se borran. Para vender de verdad, configura Turso.
+
+Después, en el webhook de Stripe usa la URL: `https://tu-app.vercel.app/webhook/stripe`.
+
+### Opción B — Render (servidor tradicional, sin base externa)
+
+1. Sube el repo a GitHub.
+2. En Render: **New → Web Service** → conecta el repo (incluye `render.yaml`).
+3. Pon las variables `BASE_URL`, `ADMIN_PASSWORD` y tus llaves.
+4. Para que los datos no se borren, agrega un **Disk** montado en `/app/data` (o configura Turso igual que arriba).
 
 ---
 
@@ -126,15 +162,18 @@ La forma más fácil es **Render.com** (tiene plan gratis):
 ```
 config/event.json   ← datos del evento, precios y preguntas (edítalo tú)
 src/
-  server.js         ← rutas y lógica principal
-  db.js             ← base de datos (SQLite integrado en Node)
+  server.js         ← rutas y lógica principal (exporta la app)
+  db.js             ← base de datos libSQL (archivo local o Turso en la nube)
   payments.js       ← Stripe (o modo demo)
   email.js          ← Resend + plantillas de correo (o modo demo)
   qr.js             ← generación de códigos QR
   render.js         ← diseño/plantillas HTML
   config.js         ← carga de configuración y variables de entorno
+api/index.js        ← punto de entrada para Vercel (serverless)
+vercel.json         ← configuración de Vercel
+render.yaml         ← configuración de Render
 public/styles.css   ← estilos
-data/               ← base de datos y correos demo (no se sube a git)
+data/               ← base de datos y correos demo en local (no se sube a git)
 ```
 
 ---

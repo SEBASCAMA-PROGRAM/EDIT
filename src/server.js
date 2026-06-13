@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { env, eventConfig, getTier, DEMO_PAYMENTS, DEMO_EMAIL, ROOT } from './config.js';
+import { env, eventConfig, getTier, DEMO_PAYMENTS, DEMO_EMAIL, DB_PERSISTENT, OUTBOX_DIR, ROOT } from './config.js';
 import * as db from './db.js';
 import { createCheckout, constructWebhookEvent, isSessionPaid } from './payments.js';
 import { qrDataUrl, qrPngBuffer, ticketUrl } from './qr.js';
@@ -15,6 +15,12 @@ import { publicLayout, adminLayout, esc, money, flash } from './render.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.use(cookieParser(env.SESSION_SECRET));
+
+// Asegura que las tablas existan antes de atender cualquier petición.
+// (En serverless esto se ejecuta una sola vez por instancia.)
+app.use(async (req, res, next) => {
+  try { await db.init(); next(); } catch (err) { next(err); }
+});
 
 // ---------- Webhook de Stripe (cuerpo crudo, ANTES del json parser) ----------
 app.post('/webhook/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -45,11 +51,11 @@ app.use(express.static(path.join(ROOT, 'public')));
 //  CUMPLIMIENTO: marcar pagado + enviar boleto con QR
 // =========================================================
 async function fulfillOrder(orderId) {
-  let order = db.getOrder(orderId);
+  let order = await db.getOrder(orderId);
   if (!order) return null;
   if (order.status === 'paid') return order; // idempotente
-  order = db.markPaid(orderId);
-  const full = db.orderWithContact(orderId);
+  order = await db.markPaid(orderId);
+  const full = await db.orderWithContact(orderId);
   const perks = JSON.parse(order.perks || '[]');
 
   if (full.contact_email) {
@@ -135,10 +141,10 @@ app.post('/comprar', async (req, res) => {
   const tier = getTier(tier_id);
   if (!tier) return res.status(400).send('Boleto no válido');
 
-  let contact = db.findContactByEmail(email);
-  if (!contact) contact = db.createContact({ name, email, phone });
+  let contact = await db.findContactByEmail(email);
+  if (!contact) contact = await db.createContact({ name, email, phone });
 
-  const order = db.createOrder({
+  const order = await db.createOrder({
     contact_id: contact.id,
     tier_id: tier.id,
     tier_name: tier.name,
@@ -149,17 +155,17 @@ app.post('/comprar', async (req, res) => {
   });
 
   const checkout = await createCheckout(order, { contactEmail: email });
-  db.setOrderSession(order.id, checkout.id, checkout.url);
+  await db.setOrderSession(order.id, checkout.id, checkout.url);
   res.redirect(checkout.url);
 });
 
 // Página de gracias (vuelta de Stripe). En modo demo el pago ya se cumplió.
 app.get('/gracias', async (req, res) => {
-  let order = db.getOrderByToken(req.query.token);
+  let order = await db.getOrderByToken(req.query.token);
   // Red de seguridad: si el webhook no llegó, confirmamos contra Stripe.
   if (order && order.status === 'pending' && await isSessionPaid(order.stripe_session_id)) {
     await fulfillOrder(order.id);
-    order = db.getOrder(order.id);
+    order = await db.getOrder(order.id);
   }
   res.send(publicLayout({
     title: 'Gracias',
@@ -184,7 +190,7 @@ app.get('/pago-cancelado', (req, res) => {
 
 // Página del boleto (lo que abre el QR)
 app.get('/t/:token', async (req, res) => {
-  const order = db.orderWithContactByToken(req.params.token);
+  const order = await db.orderWithContactByToken(req.params.token);
   if (!order) return res.status(404).send(publicLayout({ title: 'No encontrado', body: '<div class="card center">Boleto no encontrado.</div>' }));
   const perks = JSON.parse(order.perks || '[]');
   const dataUrl = await qrDataUrl(order.ticket_token);
@@ -217,7 +223,7 @@ app.get('/t/:token', async (req, res) => {
 
 // QR como PNG (usado por el correo)
 app.get('/qr/:token.png', async (req, res) => {
-  const order = db.getOrderByToken(req.params.token);
+  const order = await db.getOrderByToken(req.params.token);
   if (!order) return res.status(404).end();
   const png = await qrPngBuffer(order.ticket_token);
   res.set('Content-Type', 'image/png');
@@ -226,8 +232,8 @@ app.get('/qr/:token.png', async (req, res) => {
 });
 
 // Formulario de preguntas (incluido con el boleto)
-app.get('/formulario/:token', (req, res) => {
-  const order = db.orderWithContactByToken(req.params.token);
+app.get('/formulario/:token', async (req, res) => {
+  const order = await db.orderWithContactByToken(req.params.token);
   if (!order) return res.status(404).send('No encontrado');
   const s = eventConfig.survey;
   const done = !!order.survey_json;
@@ -252,18 +258,18 @@ app.get('/formulario/:token', (req, res) => {
   }));
 });
 
-app.post('/formulario/:token', (req, res) => {
-  const order = db.getOrderByToken(req.params.token);
+app.post('/formulario/:token', async (req, res) => {
+  const order = await db.getOrderByToken(req.params.token);
   if (!order) return res.status(404).send('No encontrado');
   const answers = {};
   for (const q of eventConfig.survey.questions) answers[q.id] = req.body[q.id] || '';
-  db.saveSurvey(order.id, answers);
+  await db.saveSurvey(order.id, answers);
   res.redirect(`/formulario/${order.ticket_token}`);
 });
 
 // ---------- MODO DEMO: simular pasarela de pago ----------
-app.get('/demo/pay/:orderId', (req, res) => {
-  const order = db.getOrder(req.params.orderId);
+app.get('/demo/pay/:orderId', async (req, res) => {
+  const order = await db.getOrder(req.params.orderId);
   if (!order) return res.status(404).send('Orden no encontrada');
   res.send(publicLayout({
     title: 'Pago (Demo)',
@@ -281,7 +287,7 @@ app.get('/demo/pay/:orderId', (req, res) => {
 });
 
 app.post('/demo/pay/:orderId', async (req, res) => {
-  const order = db.getOrder(req.params.orderId);
+  const order = await db.getOrder(req.params.orderId);
   if (!order) return res.status(404).send('Orden no encontrada');
   await fulfillOrder(order.id);
   res.redirect(`/gracias?token=${order.ticket_token}`);
@@ -336,10 +342,10 @@ const statusBadge = (o) => {
   return '<span class="badge pending">Pendiente</span>';
 };
 
-app.get('/admin', (req, res) => {
-  const s = db.stats();
-  const orders = db.listOrders();
-  const contacts = db.listContacts();
+app.get('/admin', async (req, res) => {
+  const s = await db.stats();
+  const orders = await db.listOrders();
+  const contacts = await db.listContacts();
 
   const tierOptions = eventConfig.tiers
     .map((t) => `<option value="${esc(t.id)}">${esc(t.name)} — ${money(t.price * 100)}</option>`)
@@ -439,11 +445,11 @@ app.post('/admin/cobrar', async (req, res) => {
   const { contact_id, name, email, phone, tier_id, custom_amount, custom_perks } = req.body;
 
   let contact = null;
-  if (contact_id) contact = db.getContact(contact_id);
+  if (contact_id) contact = await db.getContact(contact_id);
   if (!contact) {
     if (!name && !email) return res.redirect('/admin?t=err&msg=' + encodeURIComponent('Pon al menos nombre o email'));
-    contact = email ? db.findContactByEmail(email) : null;
-    if (!contact) contact = db.createContact({ name, email, phone });
+    contact = email ? await db.findContactByEmail(email) : null;
+    if (!contact) contact = await db.createContact({ name, email, phone });
   }
 
   let tierName, perks, amountCents, tierIdVal;
@@ -459,13 +465,13 @@ app.post('/admin/cobrar', async (req, res) => {
     tierName = tier.name; perks = tier.perks; amountCents = Math.round(tier.price * 100); tierIdVal = tier.id;
   }
 
-  const order = db.createOrder({
+  const order = await db.createOrder({
     contact_id: contact.id, tier_id: tierIdVal, tier_name: tierName,
     perks, amount_cents: amountCents, currency: eventConfig.currency, source: 'crm',
   });
 
   const checkout = await createCheckout(order, { contactEmail: contact.email });
-  db.setOrderSession(order.id, checkout.id, checkout.url);
+  await db.setOrderSession(order.id, checkout.id, checkout.url);
 
   let mailMsg = '';
   if (contact.email) {
@@ -491,7 +497,7 @@ app.post('/admin/cobrar', async (req, res) => {
 
 // Reenviar el correo de cobro
 app.post('/admin/orden/:id/cobrar-reenviar', async (req, res) => {
-  const o = db.orderWithContact(req.params.id);
+  const o = await db.orderWithContact(req.params.id);
   if (!o || !o.payment_url) return res.redirect('/admin?t=err&msg=Orden sin link');
   if (!o.contact_email) return res.redirect('/admin?t=err&msg=' + encodeURIComponent('Ese contacto no tiene email'));
   try {
@@ -511,7 +517,7 @@ app.post('/admin/orden/:id/cobrar-reenviar', async (req, res) => {
 
 // Marcar pagado a mano (Zelle/efectivo) y enviar boleto
 app.post('/admin/orden/:id/marcar-pagado', async (req, res) => {
-  const o = db.getOrder(req.params.id);
+  const o = await db.getOrder(req.params.id);
   if (!o) return res.redirect('/admin?t=err&msg=Orden no encontrada');
   await fulfillOrder(o.id);
   res.redirect('/admin?msg=' + encodeURIComponent('Marcado como pagado y boleto enviado'));
@@ -520,8 +526,8 @@ app.post('/admin/orden/:id/marcar-pagado', async (req, res) => {
 // =========================================================
 //  PANEL — CONTACTOS (CRM)
 // =========================================================
-app.get('/admin/contactos', (req, res) => {
-  const contacts = db.listContacts();
+app.get('/admin/contactos', async (req, res) => {
+  const contacts = await db.listContacts();
   const rows = contacts.map((c) => `
     <tr>
       <td><b>${esc(c.name)}</b></td>
@@ -557,18 +563,18 @@ app.get('/admin/contactos', (req, res) => {
   }));
 });
 
-app.post('/admin/contactos', (req, res) => {
+app.post('/admin/contactos', async (req, res) => {
   const { name, phone, email, notes } = req.body;
   if (!name) return res.redirect('/admin/contactos?t=err&msg=Falta el nombre');
-  db.createContact({ name, phone, email, notes });
+  await db.createContact({ name, phone, email, notes });
   res.redirect('/admin/contactos?msg=' + encodeURIComponent('Contacto guardado'));
 });
 
 // =========================================================
 //  PANEL — ESCÁNER DE ENTRADA
 // =========================================================
-app.get('/admin/scan', (req, res) => {
-  const s = db.stats();
+app.get('/admin/scan', async (req, res) => {
+  const s = await db.stats();
   res.send(adminLayout({
     title: 'Escanear',
     active: 'scan',
@@ -630,15 +636,15 @@ app.get('/admin/scan', (req, res) => {
   }));
 });
 
-app.post('/admin/api/checkin', (req, res) => {
-  const order = db.orderWithContactByToken(req.body.token);
+app.post('/admin/api/checkin', async (req, res) => {
+  const order = await db.orderWithContactByToken(req.body.token);
   if (!order) return res.json({ valid: false });
   if (order.status !== 'paid') {
     return res.json({ valid: true, status: order.status, name: order.contact_name || 'Sin nombre' });
   }
   const already = order.checked_in === 1;
-  if (!already) db.checkIn(order.id);
-  const s = db.stats();
+  if (!already) await db.checkIn(order.id);
+  const s = await db.stats();
   res.json({
     valid: true,
     status: 'paid',
@@ -655,7 +661,7 @@ app.post('/admin/api/checkin', (req, res) => {
 //  PANEL — CORREOS (bandeja demo)
 // =========================================================
 app.get('/admin/outbox', (req, res) => {
-  const dir = path.join(ROOT, 'data', 'outbox');
+  const dir = OUTBOX_DIR;
   let items = [];
   if (fs.existsSync(dir)) {
     items = fs.readdirSync(dir).filter((f) => f.endsWith('.html')).sort().reverse();
@@ -683,19 +689,37 @@ app.get('/admin/outbox', (req, res) => {
 
 app.get('/admin/outbox/:file', (req, res) => {
   const file = path.basename(req.params.file);
-  const p = path.join(ROOT, 'data', 'outbox', file);
+  const p = path.join(OUTBOX_DIR, file);
   if (!p.endsWith('.html') || !fs.existsSync(p)) return res.status(404).send('No encontrado');
   res.send(fs.readFileSync(p, 'utf8'));
 });
 
 // ---------- Salud ----------
-app.get('/health', (req, res) => res.json({ ok: true, demoPayments: DEMO_PAYMENTS, demoEmail: DEMO_EMAIL }));
+app.get('/health', (req, res) => res.json({ ok: true, demoPayments: DEMO_PAYMENTS, demoEmail: DEMO_EMAIL, dbPersistent: DB_PERSISTENT }));
 
-app.listen(env.PORT, () => {
-  console.log(`\n🎟️  ${eventConfig.event.title}`);
-  console.log(`   Servidor en ${env.BASE_URL}  (puerto ${env.PORT})`);
-  console.log(`   Panel:   ${env.BASE_URL}/admin   (contraseña: ${env.ADMIN_PASSWORD})`);
-  console.log(`   Landing: ${env.BASE_URL}/evento`);
-  console.log(`   Pagos:   ${DEMO_PAYMENTS ? '⚠️  MODO DEMO (sin Stripe)' : '✅ Stripe'}`);
-  console.log(`   Correos: ${DEMO_EMAIL ? '⚠️  MODO DEMO (sin Resend)' : '✅ Resend'}\n`);
+// Manejo de errores (incluye fallos al inicializar la BD)
+app.use((err, req, res, next) => {
+  console.error('Error en la app:', err);
+  if (res.headersSent) return next(err);
+  res.status(500).send('Ocurrió un error. Revisa la configuración (base de datos / variables).');
 });
+
+// En local (no en Vercel) encendemos el servidor; en Vercel se exporta la app.
+if (!process.env.VERCEL) {
+  db.init().then(() => {
+    app.listen(env.PORT, () => {
+      console.log(`\n🎟️  ${eventConfig.event.title}`);
+      console.log(`   Servidor en ${env.BASE_URL}  (puerto ${env.PORT})`);
+      console.log(`   Panel:   ${env.BASE_URL}/admin   (contraseña: ${env.ADMIN_PASSWORD})`);
+      console.log(`   Landing: ${env.BASE_URL}/evento`);
+      console.log(`   Pagos:   ${DEMO_PAYMENTS ? '⚠️  MODO DEMO (sin Stripe)' : '✅ Stripe'}`);
+      console.log(`   Correos: ${DEMO_EMAIL ? '⚠️  MODO DEMO (sin Resend)' : '✅ Resend'}`);
+      console.log(`   Datos:   ${DB_PERSISTENT ? '✅ persistentes' : '⚠️  temporales'}\n`);
+    });
+  }).catch((err) => {
+    console.error('No se pudo inicializar la base de datos:', err);
+    process.exit(1);
+  });
+}
+
+export default app;

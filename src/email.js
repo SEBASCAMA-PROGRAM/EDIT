@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { Resend } from 'resend';
-import { env, DEMO_EMAIL, eventConfig, ROOT } from './config.js';
+import { env, DEMO_EMAIL, eventConfig, OUTBOX_DIR } from './config.js';
 
 const resend = DEMO_EMAIL ? null : new Resend(env.RESEND_API_KEY);
-const outboxDir = path.join(ROOT, 'data', 'outbox');
+const outboxDir = OUTBOX_DIR;
 
 function ensureOutbox() {
   if (!fs.existsSync(outboxDir)) fs.mkdirSync(outboxDir, { recursive: true });
